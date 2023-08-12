@@ -104,11 +104,11 @@ function validate(user) {
       phoneNumber: Joi.string().required(),
       totalRating: Joi.number().required(),
       amountOfGignex: Joi.number().required(),
-      projects: Joi.oi.array().items(Joi.objectId().required()),
+      projects: Joi.array().items(Joi.objectId().required()),
     }).when("role", { is: "freelancer", then: Joi.required() }),
     company: Joi.object({
       name: Joi.string().required(),
-      jobs: Joi.oi.array().items(Joi.objectId().required()),
+      jobs: Joi.array().items(Joi.objectId().required()),
     }).when("role", { is: "freelancer", then: Joi.optional() }),
   });
 
