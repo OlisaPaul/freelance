@@ -90,7 +90,13 @@ class JobController {
     );
     if (!freelancer) return res.status(404).send(errorMessage("freelancer"));
 
-    job = job.applicants.push(freelancerId);
+    if (job.applicants.includes(freelancerId))
+      return res.status(400).send({
+        success: false,
+        message: "You have already applied for this job",
+      });
+
+    job.applicants.push(freelancerId);
 
     job = await jobServices.updateJobById(req.params.id, job);
 

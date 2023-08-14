@@ -47,6 +47,7 @@ router.put(
   validateObjectId,
   // auth is used to make authenticate a job.
   auth,
+  companyMiddleware,
   validateMiddleware(validateAddFreelancer),
   asyncMiddleware(jobController.addFreelancer)
 );
