@@ -19,9 +19,13 @@ router.post(
 
 router.get("/", asyncMiddleware(userController.fetchAllUsers));
 
-router.get("/freelancers", asyncMiddleware(userController.fetchAllFreelancers));
+router.get("/role/:role", asyncMiddleware(userController.getUsersByRole));
 
-router.get("/companies", asyncMiddleware(userController.fetchAllCompanies));
+router.get(
+  "/role/:role/:id",
+  validateObjectId,
+  asyncMiddleware(userController.getUsersByRole)
+);
 
 router.get(
   "/userName/:userName",

@@ -7,10 +7,6 @@ const jobSchema = new mongoose.Schema({
     ref: "user",
     required: true,
   },
-  freelancerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
-  },
   price: {
     type: Number,
     min: 1,
@@ -34,13 +30,23 @@ const jobSchema = new mongoose.Schema({
     enum: ["open", "inProgress", "closed"],
     required: "true",
   },
+  applicants: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
+  ],
+  selectedFreelancer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+    default: null,
+  },
 });
 
-const Job = mongoose.model("Job", userSchema);
+const Job = mongoose.model("Job", jobSchema);
 
-function validate(user) {
+function validate(job) {
   const schema = Joi.object({
-    freelancerId: Joi.objectId(),
     companyId: Joi.objectId().required(),
     price: Joi.number().min(1).max(3000).required(),
     jobTitle: Joi.string().min(5).max(1024).required(),
@@ -51,12 +57,11 @@ function validate(user) {
       .insensitive(),
   });
 
-  return schema.validate(user);
+  return schema.validate(job);
 }
 
-function validatePatch(user) {
+function validatePatch(job) {
   const schema = Joi.object({
-    freelancerId: Joi.objectId(),
     companyId: Joi.objectId(),
     price: Joi.number().min(1).max(3000),
     jobTitle: Joi.string().min(5).max(1024),
@@ -64,9 +69,18 @@ function validatePatch(user) {
     jobStatus: Joi.string().valid("open", "inProgress", "closed").insensitive(),
   });
 
-  return schema.validate(user);
+  return schema.validate(job);
+}
+
+function validateAddFreelancer(job) {
+  const schema = Joi.object({
+    freelancerId: Joi.objectId().required(),
+  });
+
+  return schema.validate(job);
 }
 
 exports.validatePatch = validatePatch;
 exports.validate = validate;
+exports.validateAddFreelancer = validateAddFreelancer;
 exports.Job = Job;

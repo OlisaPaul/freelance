@@ -15,27 +15,17 @@ class UserService {
     return await User.findById(userId).select("-password");
   }
 
-  async getAllFreelancers() {
-    return await User.find({ role: "freelancer" }).select(
-      "-company, -password"
-    );
+  async getUsersByRole(role) {
+    const hiddenProperty = role == "freelancer" ? "-company" : "-freelancer";
+
+    return await User.find({ role }).select("-password").select(hiddenProperty);
   }
 
-  async getFreelancerById(freelancerId) {
-    return await User.find({ role: "freelancer", _id: freelancerId }).select(
-      "-company, -password"
-    );
-  }
+  async getUserByRole(role, userId) {
+    const hiddenProperty = role == "freelancer" ? "company" : "freelancer";
 
-  async getAllCompanies() {
-    return await User.find({ role: "company" }).select(
-      "-freelancer, -password"
-    );
-  }
-
-  async getCompanyById(companyId) {
-    return await User.find({ role: "company", _id: companyId }).select(
-      "-freelancer, -password"
+    return await User.find({ role, _id: userId }).select(
+      `-${hiddenProperty}, -password`
     );
   }
 
@@ -44,7 +34,7 @@ class UserService {
   }
 
   async getUserByUsername(userName) {
-    return await User.findOne({ userName }).select("-password");
+    return await User.findOne({ userName });
   }
 
   async getAllUsers() {

@@ -15,18 +15,13 @@ class JobController {
   //Create a new job
 
   async createJob(req, res) {
-    const { freelancerId, companyId, jobStatus, price, jobTitle, duration } =
-      req.body;
+    const { companyId, jobStatus, price, jobTitle, duration } = req.body;
 
-    const company = await userServices.getCompanyById(companyId);
-    const freelancer = await userServices.getFreelancerById(freelancerId);
-
+    const [company] = await userServices.getUserByRole("company", companyId);
     if (!company) res.status(404).send(errorMessage("company"));
-    if (!freelancer) res.status(404).send(errorMessage("freelancer"));
 
     // makes sure the authenticated user is the same person as the user passed in the body of request
     let job = new Job({
-      freelancerId,
       companyId,
       jobStatus,
       price,
@@ -34,7 +29,12 @@ class JobController {
       duration,
     });
 
-    await jobServices.createJob(job);
+    company.company.jobs.push(job._id);
+
+    await Promise.all([
+      jobServices.createJob(job),
+      userServices.updateUserById(companyId, company),
+    ]);
 
     // Sends the created job as response
     res.send(successMessage(MESSAGES.CREATED, job));
@@ -71,10 +71,28 @@ class JobController {
   //Update/edit job data
   async updateJob(req, res) {
     let job = await jobServices.getJobById(req.params.id);
-
     if (!job) return res.status(404).send(errorMessage("job"));
 
     job = await jobServices.updateJobById(req.params.id, req.body);
+
+    res.send(successMessage(MESSAGES.UPDATED, job));
+  }
+
+  async addFreelancer(req, res) {
+    const { freelancerId } = req.body;
+
+    let job = await jobServices.getJobById(req.params.id);
+    if (!job) return res.status(404).send(errorMessage("job"));
+
+    const freelancer = await userServices.getUserByRole(
+      "freelancer",
+      freelancerId
+    );
+    if (!freelancer) return res.status(404).send(errorMessage("freelancer"));
+
+    job = job.applicants.push(freelancerId);
+
+    job = await jobServices.updateJobById(req.params.id, job);
 
     res.send(successMessage(MESSAGES.UPDATED, job));
   }

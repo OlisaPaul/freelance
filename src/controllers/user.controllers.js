@@ -96,16 +96,31 @@ class UserController {
     res.send(successMessage(MESSAGES.FETCHED, users));
   }
 
-  async fetchAllFreelancers(req, res) {
-    const freelancers = await userService.getAllFreelancers();
+  async getUsersByRole(req, res) {
+    const roles = ["freelancer", "company"];
+    if (!roles.includes(req.params.role))
+      return res
+        .status(400)
+        .send({ success: false, message: `role can only be one of ${roles}` });
+
+    const freelancers = await userService.getUsersByRole(req.params.role);
 
     res.send(successMessage(MESSAGES.FETCHED, freelancers));
   }
 
-  async fetchAllCompanies(req, res) {
-    const companies = await userService.getAllCompanies();
+  async getUserByRole(req, res) {
+    const { role, id } = req.params;
 
-    res.send(successMessage(MESSAGES.FETCHED, companies));
+    const roles = ["freelancer", "company"];
+    if (!roles.includes(role))
+      return res
+        .status(400)
+        .send({ success: false, message: `role can only be one of ${roles}` });
+
+    const user = await userService.getUserByRole(role, id);
+    if (!user) return res.status(404).send(errorMessage("user"));
+
+    res.send(successMessage(MESSAGES.FETCHED, user));
   }
 
   //Update/edit user data
