@@ -18,6 +18,7 @@ class UserController {
 
   //Create a new user
   async register(req, res) {
+    const { role } = req.body;
     // Checks if a user already exist by using the email id
     let user = await userService.getUserByEmail(req.body.email);
     if (user)
@@ -25,22 +26,16 @@ class UserController {
         .status(400)
         .send({ success: false, message: "User already registered" });
 
-    const userName = await userService.getUserByUsername(
-      `@${req.body.userName}`
-    );
-    if (userName)
-      return res.status(400).send({
-        success: false,
-        message: "Username has been taken, please use another one",
-      });
+    const updatedPropertiesToPick =
+      role == "freelancer"
+        ? [...propertiesToPick, "freelancer"]
+        : [...propertiesToPick, "company"];
 
-    user = new User(_.pick(req.body, [...propertiesToPick, "password"]));
+    user = new User(_.pick(req.body, [...updatedPropertiesToPick, "password"]));
 
     const avatarUrl = await generateRandomAvatar(user.email);
     user.avatarUrl = avatarUrl;
     user.avatarImgTag = `<img src=${avatarUrl} alt=${user._id}>`;
-
-    user.userName = `@${req.body.userName}`;
 
     user.role = user.role.toLowerCase();
 
@@ -50,17 +45,6 @@ class UserController {
     const token = user.generateAuthToken();
 
     user = _.pick(user, propertiesToPick);
-
-    transporter.sendMail(
-      mailOptions(user.email, user.firstName),
-      (error, info) => {
-        if (error) {
-          console.error("Error occurred:", error);
-        } else {
-          console.log("Email sent successfully:", info.response);
-        }
-      }
-    );
 
     res
       .header("x-auth-header", token)
@@ -74,17 +58,6 @@ class UserController {
     const user = await userService.getUserById(req.params.id);
 
     if (!user) return res.status(404).send(errorMessage("user"));
-
-    res.send(successMessage(MESSAGES.FETCHED, user));
-  }
-
-  async getUserByUsername(req, res) {
-    let userName = req.params.userName;
-    if (userName && !userName.startsWith("@")) userName = `@${userName}`;
-
-    const user = await userService.getUserByUsername(userName);
-
-    if (!user) return res.status(404).send(errorMessageUserName());
 
     res.send(successMessage(MESSAGES.FETCHED, user));
   }

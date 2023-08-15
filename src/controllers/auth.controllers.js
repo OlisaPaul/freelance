@@ -4,21 +4,16 @@ const userService = require("../services/user.services");
 const {
   loginSuccess,
   loginError,
-  errorMessageUserName,
+  errorMessage,
 } = require("../common/messages.common");
 
 class AuthController {
   //Create a new user
   async logIn(req, res) {
     // checking if the user exist
+    const user = await userService.getUserByEmail(req.body.email);
 
-    let userName = req.body.userName;
-    if (req.body.userName && !req.body.userName.startsWith("@"))
-      userName = `@${userName}`;
-
-    let user = await userService.getUserByUsername(userName);
-
-    if (!user) return res.status(400).send(errorMessageUserName());
+    if (!user) return res.status(400).send(errorMessage("user"));
 
     //checks if the password is valid
     const validPassword = await bcrypt.compare(

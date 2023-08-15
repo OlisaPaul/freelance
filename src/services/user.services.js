@@ -30,11 +30,7 @@ class UserService {
   }
 
   async getUserByEmail(email) {
-    return await User.findOne({ email }).select("-password");
-  }
-
-  async getUserByUsername(userName) {
-    return await User.findOne({ userName });
+    return await User.findOne({ email });
   }
 
   async getAllUsers() {
