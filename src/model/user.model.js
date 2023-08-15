@@ -42,10 +42,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  userName: {
-    type: String,
-    required: true,
-  },
   role: {
     type: String,
     enum: ["freelancer", "company"],
@@ -91,7 +87,6 @@ function validate(user) {
     lastName: Joi.string().min(4).max(255).required(),
     password: Joi.string().min(5).max(1024).required(),
     email: Joi.string().email().min(5).max(255).required(),
-    userName: Joi.string().min(4).max(255).required(),
     role: Joi.string()
       .min(4)
       .max(255)
@@ -105,11 +100,11 @@ function validate(user) {
       totalRating: Joi.number().required(),
       amountOfGignex: Joi.number().required(),
       projects: Joi.array().items(Joi.objectId().required()),
-    }).when("role", { is: "freelancer", then: Joi.required() }),
+    }),
     company: Joi.object({
       name: Joi.string().required(),
       jobs: Joi.array().items(Joi.objectId().required()),
-    }).when("role", { is: "freelancer", then: Joi.optional() }),
+    }),
   });
 
   return schema.validate(user);
@@ -120,7 +115,6 @@ function validatePatch(user) {
     firstName: Joi.string().min(4).max(255),
     lastName: Joi.string().min(4).max(255),
     password: Joi.string().min(5).max(1024),
-    userName: Joi.string().min(4).max(255),
     eth: Joi.string().min(4).max(255),
     cohort: Joi.string().min(4).max(4),
     email: Joi.string().email().min(5).max(255),
